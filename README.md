@@ -22,6 +22,9 @@ Before you begin, make sure to:
 
 Install the extension from the [Visual Studio Marketplace](https://vscode.processing.org/) or search for "Processing" in the [Extension Marketplace](https://marketplace.visualstudio.com/). You can also install it directly from VS Code by searching for "Processing" in the Extensions view (`Ctrl + Shift + X` or `Cmd + Shift + X` on macOS). Pick the extension published by "Processing Foundation".
 
+#### Install from Open VSX (VSIX)
+If you are using a VS Code–compatible editor that does not support the Visual Studio Marketplace (for example VSCodium or Cursor), you can install the extension from [Open VSX](https://open-vsx.org/extension/processing-foundation/processing-vscode-extension). 
+
 ### Running Your First Sketch
 
 1. Click the Processing icon in the Activity Bar on the side of the VS Code window.
