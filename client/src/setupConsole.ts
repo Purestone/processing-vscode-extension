@@ -156,12 +156,20 @@ class ProcessingConsoleViewProvider implements WebviewViewProvider {
 									const hours = now.getHours().toString().padStart(2, '0');
 									const minutes = now.getMinutes().toString().padStart(2, '0');
 									const seconds = now.getSeconds().toString().padStart(2, '0');
-									ts.textContent = "[" + hours + ":" + minutes + ":" + seconds + "] ";
+									const timestampText = "[" + hours + ":" + minutes + ":" + seconds + "] ";
+									ts.textContent = timestampText;
 
-									pre.textContent = text;
-									if (pre.textContent.endsWith("\\n")) {
-										pre.textContent = pre.textContent.slice(0, -1);
+									let consoleText = String(text ?? "");
+									if (consoleText.endsWith("\\n")) {
+										consoleText = consoleText.slice(0, -1);
 									}
+
+									const alignedConsoleText = consoleText
+										.split("\\n")
+										.map((line, index) => index === 0 ? line : " ".repeat(timestampText.length) + line)
+										.join("\\n");
+
+									pre.textContent = alignedConsoleText;
 
 									pre.prepend(ts);
 									document.body.appendChild(pre);
