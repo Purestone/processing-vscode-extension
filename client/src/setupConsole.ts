@@ -146,30 +146,25 @@ class ProcessingConsoleViewProvider implements WebviewViewProvider {
 								const message = event.data; // The JSON data our extension sent
 
 								const isScrolledToBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight;
+								const createTimestampText = () => {
+									const now = new Date();
+									const hours = now.getHours().toString().padStart(2, '0');
+									const minutes = now.getMinutes().toString().padStart(2, '0');
+									const seconds = now.getSeconds().toString().padStart(2, '0');
+									return "[" + hours + ":" + minutes + ":" + seconds + "] ";
+								};
+
 								const appendConsoleLine = (lineClass, text) => {
 									const pre = document.createElement("pre");
 									pre.className = lineClass;
 
 									const ts = document.createElement("span");
 									ts.className = "console-timestamp";
-									const now = new Date();
-									const hours = now.getHours().toString().padStart(2, '0');
-									const minutes = now.getMinutes().toString().padStart(2, '0');
-									const seconds = now.getSeconds().toString().padStart(2, '0');
-									const timestampText = "[" + hours + ":" + minutes + ":" + seconds + "] ";
+									const timestampText = createTimestampText();
+									const continuationPrefix = " ".repeat(timestampText.length);
+									const normalizedText = String(text ?? "").replace(/\\n$/, "");
 									ts.textContent = timestampText;
-
-									let consoleText = String(text ?? "");
-									if (consoleText.endsWith("\\n")) {
-										consoleText = consoleText.slice(0, -1);
-									}
-
-									const alignedConsoleText = consoleText
-										.split("\\n")
-										.map((line, index) => index === 0 ? line : " ".repeat(timestampText.length) + line)
-										.join("\\n");
-
-									pre.textContent = alignedConsoleText;
+									pre.textContent = normalizedText.replaceAll("\\n", "\\n" + continuationPrefix);
 
 									pre.prepend(ts);
 									document.body.appendChild(pre);
