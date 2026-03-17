@@ -44,22 +44,43 @@ export default function setupConsole(context: ExtensionContext) {
 				shell: false,
 			}
 		);
+
+		// Line buffering to avoid fragmenting output across multiple timestamps
+		let stdoutBuffer = '';
+		let stderrBuffer = '';
+
+		const sendCompleteLines = (buffer: string, type: 'stdout' | 'stderr'): string => {
+			const lines = buffer.split('\n');
+			// All but the last element are complete lines
+			for (let i = 0; i < lines.length - 1; i++) {
+				provider.webview?.webview.postMessage({ type, value: lines[i] + '\n' });
+			}
+			// Return the incomplete last line (or empty string if buffer ended with \n)
+			return lines[lines.length - 1];
+		};
+
 		proc.stdout.on("data", (data) => {
 			if (proc != sketchProcesses[0]) {
-				// If this is not the most recent process, ignore its output
 				return;
 			}
-			provider.webview?.webview.postMessage({ type: 'stdout', value: data?.toString() });
+			stdoutBuffer += data?.toString();
+			stdoutBuffer = sendCompleteLines(stdoutBuffer, 'stdout');
 		});
 		proc.stderr.on("data", (data) => {
 			if (proc != sketchProcesses[0]) {
-				// If this is not the most recent process, ignore its output
 				return;
 			}
-			provider.webview?.webview.postMessage({ type: 'stderr', value: data?.toString() });
-			// TODO: Handle and highlight errors in the editor
+			stderrBuffer += data?.toString();
+			stderrBuffer = sendCompleteLines(stderrBuffer, 'stderr');
 		});
 		proc.on('close', (code) => {
+			// Flush any remaining buffered output
+			if (stdoutBuffer) {
+				provider.webview?.webview.postMessage({ type: 'stdout', value: stdoutBuffer });
+			}
+			if (stderrBuffer) {
+				provider.webview?.webview.postMessage({ type: 'stderr', value: stderrBuffer });
+			}
 			provider.webview?.webview.postMessage({ type: 'close', value: code?.toString() });
 			sketchProcesses.splice(sketchProcesses.indexOf(proc), 1);
 			commands.executeCommand('setContext', 'processing.sketch.running', sketchProcesses.length > 0);
